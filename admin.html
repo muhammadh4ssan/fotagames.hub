@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FotaGame Hub - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Admin specific styles */
+        .admin-login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .admin-login-box {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            width: 350px;
+        }
+        .admin-login-box h2 { font-family: var(--font-heading); margin-bottom: 20px; }
+        .admin-login-box input {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            background: var(--bg-color); border: 1px solid var(--border-color); color: white; border-radius: 6px; text-align: center; font-size: 1.2rem;
+            outline: none;
+        }
+        .admin-login-box input:focus {
+            border-color: var(--primary-color);
+        }
+        .admin-dashboard { display: none; padding: 40px; max-width: 1200px; margin: 0 auto;}
+        .admin-dashboard.active { display: block; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        .data-table th { background: var(--surface-highlight); color: white; font-weight: 600;}
+        .action-btn { padding: 6px 12px; cursor: pointer; border: none; border-radius: 4px; margin-right: 5px; color: white; }
+        .btn-edit { background: var(--primary-color); }
+        .btn-delete { background: #f85149; }
+        .btn-edit:hover { background: #3168b5; }
+        .btn-delete:hover { background: #d03029; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.9rem;}
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px; background: var(--bg-color); border: 1px solid var(--border-color); color: white; border-radius: 6px; font-family: var(--font-body);
+        }
+        .modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.8); z-index: 5000; align-items:center; justify-content:center; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--surface-color); padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto;}
+    </style>
+</head>
+<body>
+
+    <!-- Security Wall -->
+    <div class="admin-login-screen" id="adminLoginScreen">
+        <div class="admin-login-box">
+            <i class='bx bxs-lock-alt' style="font-size: 3rem; color: var(--primary-color); margin-bottom: 10px;"></i>
+            <h2>Admin Access</h2>
+            <input type="password" id="pinInput" placeholder="Enter PIN">
+            <button class="btn-primary" id="loginBtn" style="width:100%">Verify</button>
+            <p id="loginError" style="color: #f85149; margin-top: 10px; display: none;">Invalid PIN</p>
+            <a href="index.html" style="display:block; margin-top:20px; color: var(--text-secondary); text-decoration:none;">&larr; Back to Hub</a>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="admin-dashboard container" id="adminDashboard">
+        <header class="top-header" style="margin-bottom: 30px;">
+            <div class="welcome-text">
+                <h1>Hub Administration</h1>
+                <p>Manage Games and Site Content securely.</p>
+            </div>
+            <div>
+                <a href="index.html" class="btn-secondary" style="display:inline-flex; width: auto; padding: 10px 20px;">&larr; View Public Site</a>
+                <button class="btn-primary" id="addGameBtn" style="display:inline-flex; margin-left: 10px;"><i class='bx bx-plus'></i> Add Game</button>
+            </div>
+        </header>
+
+        <section style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+            <h2 style="margin-bottom: 15px; font-family: var(--font-heading); color: white;">Site Settings</h2>
+            <div class="form-group">
+                <label>Main Title (HTML allowed)</label>
+                <input type="text" id="siteTitleInput">
+            </div>
+            <div class="form-group">
+                <label>Subtitle / Description (HTML allowed)</label>
+                <input type="text" id="siteSubtitleInput">
+            </div>
+            <button class="btn-primary" id="saveSettingsBtn" style="width: auto;">Save Settings</button>
+        </section>
+
+        <section style="background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px;">
+            <h2 style="margin-bottom: 15px; font-family: var(--font-heading); color: white;">Games Database (<span id="gameCount" style="color: var(--primary-color);">0</span>)</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th style="width: 100px;">Price</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminGamesTable">
+                        <!-- Javascript Data -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add/Edit Game Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="margin-bottom: 20px; color: white; font-family: var(--font-heading);">Add New Game</h2>
+            <input type="hidden" id="formId">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="formTitle">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="formCategory">
+                    <option value="Action">Action</option>
+                    <option value="RPG">RPG</option>
+                    <option value="Strategy">Strategy</option>
+                    <option value="Simulation">Simulation</option>
+                    <option value="Puzzle">Puzzle</option>
+                    <option value="Racing">Racing</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Adventure">Adventure</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Price</label>
+                <input type="text" id="formPrice" value="Free">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="formDesc" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Playable URL (iframe src)</label>
+                <input type="text" id="formUrl" placeholder="https://www.crazygames.com/embed/...">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top:20px;">
+                <button class="btn-primary" id="saveGameBtn" style="flex:1;">Save Game</button>
+                <button class="btn-secondary" id="cancelModalBtn" style="flex:1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
