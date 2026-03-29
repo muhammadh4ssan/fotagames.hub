@@ -134,7 +134,16 @@ const searchInput = document.getElementById('searchInput');
 const navLinks = document.querySelectorAll('.nav-links li');
 const categoryTitle = document.getElementById('categoryTitle');
 const noResultsMsg = document.getElementById('noResultsMsg');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebar = document.querySelector('.sidebar');
 const viewButtons = document.querySelectorAll('.view-options button');
+
+// Mobile Menu Toggle
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('mobile-active');
+    });
+}
 
 // Grid/List View Logic
 let currentView = 'grid'; // 'grid' | 'list'
@@ -229,16 +238,16 @@ function filterGames() {
 searchInput.addEventListener('input', filterGames);
 
 navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        // Remove active class from all
+    link.addEventListener('click', () => {
         navLinks.forEach(l => l.classList.remove('active'));
-        // Add active class to clicked
-        const target = e.currentTarget;
-        target.classList.add('active');
+        link.classList.add('active');
         
         // Filter and update UI
         searchInput.value = ''; // Clear search on category change
         filterGames();
+        
+        // Auto-close mobile menu if open
+        sidebar.classList.remove('mobile-active');
     });
 });
 
